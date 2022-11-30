@@ -10,6 +10,7 @@ import io.zkrytonite.chakra.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -72,9 +73,13 @@ public class AuthService {
             throw new TokenExpiredException("Verification token expired");
         }
 
-        User user = verificationToken.getUser();
-        user.setEnabled(true);
+        fetchAndEnableUser(verificationToken);
+    }
 
+    @Transactional
+    public void fetchAndEnableUser(VerificationToken verificationToken) {
+        final User user = verificationToken.getUser();
+        user.setEnabled(true);
         userRepository.save(user);
     }
 }
